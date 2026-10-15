@@ -1,0 +1,43 @@
+
+name: Build Naco Chicken PWA
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Get project files
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Enable pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@9 --activate
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build web app
+        working-directory: artifacts/burger-delivery
+        run: pnpm exec expo export --platform web
+
+      - name: Save web build
+        uses: actions/upload-artifact@v4
+        with:
+          name: naco-chicken-web
+          path: artifacts/burger-delivery/dist/
+          if-no-files-found: error
